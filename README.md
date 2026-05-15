@@ -2,7 +2,7 @@
 
 The official website for Deeper Christian Life Ministry (DCLM), designed to keep members and visitors informed about sermons, events, announcements, and church activities.
 
-**Live site:** [https://dclm-frontend.vercel.app](https://dclm-frontend.vercel.app)
+**Live site:** [DCLM Church](https://dclm-alpha.vercel.app)
 
 ---
 
