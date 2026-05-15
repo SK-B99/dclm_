@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAnnouncements } from "@/lib/api";
 
 export default async function AnnouncementsPage() {

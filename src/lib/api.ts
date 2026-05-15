@@ -1,8 +1,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const headers = {
-  "ngrok-skip-browser-warning": "true",
-  "Content-Type": "application/json",
+  'ngrok-skip-browser-warning': 'true',
+  'Content-Type': 'application/json',
 };
 
 export async function getSermons() {
@@ -10,7 +10,7 @@ export async function getSermons() {
     next: { revalidate: 60 }, // rebuild every 60 seconds
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch sermons");
+  if (!res.ok) throw new Error('Failed to fetch sermons');
   return res.json();
 }
 
@@ -19,7 +19,7 @@ export async function getSermon(id: string) {
     next: { revalidate: 60 },
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch sermon");
+  if (!res.ok) throw new Error('Failed to fetch sermon');
   return res.json();
 }
 
@@ -28,7 +28,7 @@ export async function getEvents() {
     next: { revalidate: 60 },
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch events");
+  if (!res.ok) throw new Error('Failed to fetch events');
   return res.json();
 }
 
@@ -37,7 +37,7 @@ export async function getAnnouncements() {
     next: { revalidate: 60 },
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch announcements");
+  if (!res.ok) throw new Error('Failed to fetch announcements');
   return res.json();
 }
 
@@ -46,7 +46,7 @@ export async function getGalleryAlbums() {
     next: { revalidate: 60 },
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch gallery");
+  if (!res.ok) throw new Error('Failed to fetch gallery');
   return res.json();
 }
 
@@ -55,6 +55,6 @@ export async function getChurchProfile() {
     next: { revalidate: 60 },
     headers,
   });
-  if (!res.ok) throw new Error("Failed to fetch church profile");
+  if (!res.ok) throw new Error('Failed to fetch church profile');
   return res.json();
 }

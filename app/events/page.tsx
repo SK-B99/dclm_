@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getEvents } from "@/lib/api";
 
 export default async function EventsPage() {
