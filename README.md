@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DCLM Church — Frontend
 
-## Getting Started
+The public-facing website for Deeper Christian Life Ministry (DCLM), built with Next.js and Tailwind CSS. It fetches content from a NestJS backend API and displays sermons, events, announcements, gallery, and church information.
 
-First, run the development server:
+**Live site:** [https://dclm-frontend.vercel.app](https://dclm-frontend.vercel.app)
+
+---
+
+## Tech stack
+
+- **Framework** — Next.js 16 (App Router)
+- **Styling** — Tailwind CSS
+- **Language** — TypeScript
+- **Deployment** — Vercel
+
+---
+
+## Pages
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Home | `/` | Hero, service times, quick links |
+| About | `/about` | Church history, vision, mission |
+| Sermons | `/sermons` | List of published sermons |
+| Sermon detail | `/sermons/:id` | Single sermon with audio/video |
+| Events | `/events` | Upcoming events and programs |
+| Announcements | `/announcements` | Published announcements |
+| Gallery | `/gallery` | Photo and video albums |
+| Contact | `/contact` | Church contact information |
+
+---
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── about/
+│   ├── announcements/
+│   ├── contact/
+│   ├── events/
+│   ├── gallery/
+│   ├── sermons/
+│   │   └── [id]/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   └── layout/
+│       ├── Navbar.tsx
+│       └── Footer.tsx
+└── lib/
+    └── api.ts
+```
+
+---
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 20+
+- npm
+- DCLM backend running (see backend README)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/SK-B99/dclm-frontend.git
+cd dclm-frontend
+
+# Install dependencies
+npm install
+```
+
+### Environment variables
+
+Create a `.env.local` file in the project root:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-ngrok-url.ngrok-free.dev
+```
+
+### Running locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be available at `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+The frontend is deployed on **Vercel** and connected to the GitHub repository. Every push to the `main` branch triggers an automatic deployment.
 
-To learn more about Next.js, take a look at the following resources:
+### Environment variables on Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set the following in your Vercel project settings under **Settings → Environment Variables**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Key | Value |
+|-----|-------|
+| `NEXT_PUBLIC_API_URL` | Your backend API URL |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Backend
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The frontend consumes the DCLM Church NestJS backend API. All data fetching is done server-side via the functions in `src/lib/api.ts`.
+
+**API endpoints used:**
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /sermons` | Fetch published sermons |
+| `GET /sermons/:id` | Fetch single sermon |
+| `GET /events` | Fetch upcoming events |
+| `GET /announcements` | Fetch published announcements |
+| `GET /gallery/albums` | Fetch gallery albums |
+| `GET /church-profile` | Fetch church info |
+
+---
+
+## License
+
+MIT
