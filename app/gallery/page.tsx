@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getGalleryAlbums } from "@/lib/api";
 
 export default async function GalleryPage() {
