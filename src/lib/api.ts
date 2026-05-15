@@ -7,7 +7,7 @@ const headers = {
 
 export async function getSermons() {
   const res = await fetch(`${API_URL}/sermons`, {
-    cache: "no-store",
+    next: { revalidate: 60 }, // rebuild every 60 seconds
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch sermons");
@@ -16,7 +16,7 @@ export async function getSermons() {
 
 export async function getSermon(id: string) {
   const res = await fetch(`${API_URL}/sermons/${id}`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch sermon");
@@ -25,7 +25,7 @@ export async function getSermon(id: string) {
 
 export async function getEvents() {
   const res = await fetch(`${API_URL}/events`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch events");
@@ -34,7 +34,7 @@ export async function getEvents() {
 
 export async function getAnnouncements() {
   const res = await fetch(`${API_URL}/announcements`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch announcements");
@@ -43,7 +43,7 @@ export async function getAnnouncements() {
 
 export async function getGalleryAlbums() {
   const res = await fetch(`${API_URL}/gallery/albums`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch gallery");
@@ -52,7 +52,7 @@ export async function getGalleryAlbums() {
 
 export async function getChurchProfile() {
   const res = await fetch(`${API_URL}/church-profile`, {
-    cache: "no-store",
+    next: { revalidate: 60 },
     headers,
   });
   if (!res.ok) throw new Error("Failed to fetch church profile");
