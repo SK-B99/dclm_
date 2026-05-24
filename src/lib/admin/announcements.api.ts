@@ -15,3 +15,5 @@ export function adminUpdateAnnouncement(token: string, id: string, data: any) {
 export function adminDeleteAnnouncement(token: string, id: string) {
   return apiClient(`/announcements/${id}`, { method: 'DELETE', token });
 }
+
+//done
