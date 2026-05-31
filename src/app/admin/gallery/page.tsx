@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import {
-  adminGetAlbums, adminCreateAlbum, adminDeleteAlbum,
-  adminCreateMedia, adminDeleteMedia,
+  adminGetAlbums, adminCreateAlbum, adminUpdateAlbum,
+  adminDeleteAlbum, adminCreateMedia, adminDeleteMedia,
 } from '@/lib/admin/gallery.api';
+import ImageUpload from '@/components/admin/ImageUpload';
 
 export default function AdminGalleryPage() {
   const { token, isAuthenticated } = useAdminAuth();
@@ -17,6 +18,8 @@ export default function AdminGalleryPage() {
   const [message, setMessage] = useState('');
   const [showAlbumForm, setShowAlbumForm] = useState(false);
   const [showMediaForm, setShowMediaForm] = useState(false);
+  const [editingAlbumId, setEditingAlbumId] = useState<string | null>(null);
+  const [editAlbumForm, setEditAlbumForm] = useState({ title: '', description: '', coverUrl: '' });
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/admin');
@@ -50,6 +53,26 @@ export default function AdminGalleryPage() {
     }
   };
 
+  const handleEditAlbum = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await adminUpdateAlbum(token!, editingAlbumId!, {
+        ...editAlbumForm,
+        description: editAlbumForm.description || undefined,
+        coverUrl: editAlbumForm.coverUrl || undefined,
+      });
+      setMessage('Album updated!');
+      setEditingAlbumId(null);
+      setEditAlbumForm({ title: '', description: '', coverUrl: '' });
+      fetchAlbums();
+    } catch {
+      setMessage('Failed to update album.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddMedia = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -65,6 +88,29 @@ export default function AdminGalleryPage() {
       fetchAlbums();
     } catch {
       setMessage('Failed to add media.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Bulk upload handler
+  const handleBulkUpload = async (urls: string[]) => {
+    setLoading(true);
+    setMessage('');
+    try {
+      for (const url of urls) {
+        await adminCreateMedia(token!, {
+          url,
+          type: 'IMAGE',
+          title: '',
+          albumId: mediaForm.albumId || undefined,
+        });
+      }
+      setMessage(`${urls.length} photo${urls.length > 1 ? 's' : ''} uploaded successfully!`);
+      setShowMediaForm(false);
+      fetchAlbums();
+    } catch {
+      setMessage('Some photos failed to upload.');
     } finally {
       setLoading(false);
     }
@@ -86,6 +132,41 @@ export default function AdminGalleryPage() {
     } catch {}
   };
 
+  const startEditAlbum = (album: any) => {
+    setEditingAlbumId(album.id);
+    setEditAlbumForm({
+      title: album.title || '',
+      description: album.description || '',
+      coverUrl: album.coverUrl || '',
+    });
+    setShowAlbumForm(false);
+    setShowMediaForm(false);
+  };
+
+  const albumFields = (formData: any, setFormData: any) => (
+    <>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+        <input type="text" required value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <input type="text" value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+        />
+      </div>
+      <ImageUpload
+        label="Album Cover Image"
+        currentUrl={formData.coverUrl}
+        onUpload={(url) => setFormData({ ...formData, coverUrl: url })}
+      />
+    </>
+  );
+
   if (!isAuthenticated) return null;
 
   return (
@@ -97,52 +178,32 @@ export default function AdminGalleryPage() {
           ← Dashboard
         </button>
       </div>
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         {message && (
           <div className={`px-4 py-3 rounded-lg mb-6 text-sm ${
-            message.includes('Failed')
-              ? 'bg-red-50 text-red-600'
-              : 'bg-green-50 text-green-700'
+            message.includes('Failed') ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-700'
           }`}>
             {message}
           </div>
         )}
 
         <div className="flex gap-4 mb-6">
-          <button onClick={() => { setShowAlbumForm(!showAlbumForm); setShowMediaForm(false); }}
+          <button onClick={() => { setShowAlbumForm(!showAlbumForm); setShowMediaForm(false); setEditingAlbumId(null); }}
             className="bg-blue-900 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition text-sm font-bold">
             {showAlbumForm ? 'Cancel' : '+ New Album'}
           </button>
-          <button onClick={() => { setShowMediaForm(!showMediaForm); setShowAlbumForm(false); }}
+          <button onClick={() => { setShowMediaForm(!showMediaForm); setShowAlbumForm(false); setEditingAlbumId(null); }}
             className="bg-yellow-500 text-white px-6 py-2 rounded-lg hover:bg-yellow-400 transition text-sm font-bold">
             {showMediaForm ? 'Cancel' : '+ Add Media'}
           </button>
         </div>
 
+        {/* Create Album Form */}
         {showAlbumForm && (
           <form onSubmit={handleCreateAlbum} className="bg-white rounded-xl shadow p-6 mb-6 space-y-4">
             <h2 className="text-lg font-bold text-blue-900">New Album</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-              <input type="text" required value={albumForm.title}
-                onChange={(e) => setAlbumForm({ ...albumForm, title: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <input type="text" value={albumForm.description}
-                onChange={(e) => setAlbumForm({ ...albumForm, description: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cover URL</label>
-              <input type="url" value={albumForm.coverUrl}
-                onChange={(e) => setAlbumForm({ ...albumForm, coverUrl: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
+            {albumFields(albumForm, setAlbumForm)}
             <button type="submit" disabled={loading}
               className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition disabled:opacity-50">
               {loading ? 'Saving...' : 'Create Album'}
@@ -150,20 +211,33 @@ export default function AdminGalleryPage() {
           </form>
         )}
 
-        {showMediaForm && (
-          <form onSubmit={handleAddMedia} className="bg-white rounded-xl shadow p-6 mb-6 space-y-4">
-            <h2 className="text-lg font-bold text-blue-900">Add Media</h2>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL *</label>
-              <input type="url" required value={mediaForm.url}
-                onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
+        {/* Edit Album Form */}
+        {editingAlbumId && (
+          <form onSubmit={handleEditAlbum} className="bg-white rounded-xl shadow p-6 mb-6 space-y-4 border-2 border-yellow-400">
+            <h2 className="text-lg font-bold text-yellow-600">✏️ Edit Album</h2>
+            {albumFields(editAlbumForm, setEditAlbumForm)}
+            <div className="flex gap-3">
+              <button type="submit" disabled={loading}
+                className="flex-1 bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-400 transition disabled:opacity-50">
+                {loading ? 'Saving...' : 'Update Album'}
+              </button>
+              <button type="button" onClick={() => setEditingAlbumId(null)}
+                className="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition">
+                Cancel
+              </button>
             </div>
+          </form>
+        )}
+
+        {/* Add Media Form */}
+        {showMediaForm && (
+          <div className="bg-white rounded-xl shadow p-6 mb-6 space-y-4">
+            <h2 className="text-lg font-bold text-blue-900">Add Media</h2>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select value={mediaForm.type}
-                onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value })}
+                onChange={(e) => setMediaForm({ ...mediaForm, type: e.target.value, url: '' })}
                 className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
                 <option value="IMAGE">Image</option>
                 <option value="VIDEO">Video</option>
@@ -171,13 +245,8 @@ export default function AdminGalleryPage() {
                 <option value="DOCUMENT">Document</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input type="text" value={mediaForm.title}
-                onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
-              />
-            </div>
+
+            {/* Album selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Album</label>
               <select value={mediaForm.albumId}
@@ -189,13 +258,54 @@ export default function AdminGalleryPage() {
                 ))}
               </select>
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-400 transition disabled:opacity-50">
-              {loading ? 'Saving...' : 'Add Media'}
-            </button>
-          </form>
+
+            {/* ✅ Bulk image upload for IMAGE, URL input for others */}
+            {mediaForm.type === 'IMAGE' ? (
+              <div className="space-y-2">
+                <ImageUpload
+                  label="Upload Photos (select multiple at once)"
+                  multiple={true}
+                  onUpload={(url) => setMediaForm({ ...mediaForm, url })}
+                  onMultiUpload={handleBulkUpload}
+                />
+                <p className="text-xs text-gray-400">
+                  💡 Hold Ctrl (Windows) or Cmd (Mac) to select multiple photos at once
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleAddMedia} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {mediaForm.type === 'VIDEO' ? 'YouTube/Video URL *' :
+                     mediaForm.type === 'AUDIO' ? 'Audio URL *' : 'Document URL *'}
+                  </label>
+                  <input type="url" required value={mediaForm.url}
+                    onChange={(e) => setMediaForm({ ...mediaForm, url: e.target.value })}
+                    placeholder={
+                      mediaForm.type === 'VIDEO' ? 'https://youtube.com/watch?v=...' :
+                      mediaForm.type === 'AUDIO' ? 'https://cloudinary.com/audio.mp3' :
+                      'https://example.com/document.pdf'
+                    }
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input type="text" value={mediaForm.title}
+                    onChange={(e) => setMediaForm({ ...mediaForm, title: e.target.value })}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <button type="submit" disabled={loading}
+                  className="w-full bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-400 transition disabled:opacity-50">
+                  {loading ? 'Saving...' : 'Add Media'}
+                </button>
+              </form>
+            )}
+          </div>
         )}
 
+        {/* Albums List */}
         <div className="space-y-6">
           {albums.length === 0 ? (
             <p className="text-gray-400 text-center py-12">No albums yet.</p>
@@ -203,22 +313,43 @@ export default function AdminGalleryPage() {
             albums.map((album) => (
               <div key={album.id} className="bg-white rounded-xl shadow p-5">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-blue-900">{album.title}</h3>
-                    {album.description && (
-                      <p className="text-sm text-gray-500">{album.description}</p>
+                  <div className="flex gap-3 items-start">
+                    {album.coverUrl && (
+                      <img src={album.coverUrl} alt={album.title}
+                        className="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
                     )}
-                    <p className="text-xs text-gray-400 mt-1">{album.media?.length || 0} items</p>
+                    <div>
+                      <h3 className="font-bold text-blue-900">{album.title}</h3>
+                      {album.description && (
+                        <p className="text-sm text-gray-500">{album.description}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-1">{album.media?.length || 0} items</p>
+                    </div>
                   </div>
-                  <button onClick={() => handleDeleteAlbum(album.id)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium">
-                    Delete Album
-                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={() => startEditAlbum(album)}
+                      className="text-yellow-500 hover:text-yellow-700 text-sm font-medium">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDeleteAlbum(album.id)}
+                      className="text-red-500 hover:text-red-700 text-sm font-medium">
+                      Delete
+                    </button>
+                  </div>
                 </div>
                 {album.media?.length > 0 && (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {album.media.map((m: any) => (
                       <div key={m.id} className="bg-gray-50 rounded-lg p-3">
+                        {m.type === 'IMAGE' && m.url && (
+                          <img src={m.url} alt={m.title || ''}
+                            className="w-full h-24 object-cover rounded mb-2" />
+                        )}
+                        {m.type === 'VIDEO' && (
+                          <div className="w-full h-24 bg-gray-200 rounded mb-2 flex items-center justify-center">
+                            <span className="text-2xl">▶️</span>
+                          </div>
+                        )}
                         <p className="text-xs text-gray-600 truncate">{m.title || m.url}</p>
                         <p className="text-xs text-gray-400">{m.type}</p>
                         <button onClick={() => handleDeleteMedia(m.id)}

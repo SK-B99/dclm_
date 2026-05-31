@@ -27,8 +27,16 @@ export default async function SermonsPage() {
               href={`/sermons/${sermon.id}`}
               className="bg-white rounded-xl shadow hover:shadow-md transition overflow-hidden"
             >
-              <div className="w-full h-48 bg-blue-900 flex items-center justify-center">
-                <span className="text-5xl">🎙</span>
+              <div className="w-full h-48 bg-blue-900 flex items-center justify-center overflow-hidden">
+                {sermon.thumbnailUrl ? (
+                  <img
+                    src={sermon.thumbnailUrl}
+                    alt={sermon.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl">🎙</span>
+                )}
               </div>
               <div className="p-5">
                 <h2 className="text-lg font-bold text-blue-900 mb-1">
@@ -40,6 +48,14 @@ export default async function SermonsPage() {
                 <p className="text-xs text-gray-400">
                   {new Date(sermon.date).toDateString()}
                 </p>
+                <div className="flex gap-2 mt-2">
+                  {sermon.videoUrl && (
+                    <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">▶ Video</span>
+                  )}
+                  {sermon.audioUrl && (
+                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">🎵 Audio</span>
+                  )}
+                </div>
               </div>
             </Link>
           ))}

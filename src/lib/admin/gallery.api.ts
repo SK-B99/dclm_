@@ -8,6 +8,10 @@ export function adminCreateAlbum(token: string, data: any) {
   return apiClient('/gallery/albums', { method: 'POST', token, body: data });
 }
 
+export function adminUpdateAlbum(token: string, id: string, data: any) {
+  return apiClient(`/gallery/albums/${id}`, { method: 'PATCH', token, body: data });
+}
+
 export function adminDeleteAlbum(token: string, id: string) {
   return apiClient(`/gallery/albums/${id}`, { method: 'DELETE', token });
 }

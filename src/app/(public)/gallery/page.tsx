@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { getGalleryAlbums } from "@/lib/api";
 
 export default async function GalleryPage() {
@@ -21,27 +22,38 @@ export default async function GalleryPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {albums.map((album: any) => (
-            <div
+            <Link
               key={album.id}
-              className="bg-white rounded-xl shadow overflow-hidden"
+              href={`/gallery/${album.id}`}
+              className="bg-white rounded-xl shadow overflow-hidden hover:shadow-md transition hover:-translate-y-1"
             >
-              <div className="w-full h-48 bg-blue-900 flex items-center justify-center">
-                <span className="text-5xl">🖼</span>
+              <div className="w-full h-48 bg-blue-900 flex items-center justify-center overflow-hidden">
+                {album.coverUrl ? (
+                  <img
+                    src={album.coverUrl}
+                    alt={album.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : album.media?.[0]?.url ? (
+                  <img
+                    src={album.media[0].url}
+                    alt={album.title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-5xl">🖼</span>
+                )}
               </div>
               <div className="p-5">
-                <h2 className="text-lg font-bold text-blue-900">
-                  {album.title}
-                </h2>
+                <h2 className="text-lg font-bold text-blue-900">{album.title}</h2>
                 {album.description && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {album.description}
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">{album.description}</p>
                 )}
                 <p className="text-xs text-gray-400 mt-2">
                   {album.media?.length || 0} items
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

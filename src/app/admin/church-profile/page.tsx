@@ -33,6 +33,8 @@ export default function AdminChurchProfilePage() {
     try {
       await adminUpdateChurchProfile(token!, form);
       setMessage('Church profile updated successfully!');
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // ✅ scroll to top
+      setTimeout(() => setMessage(''), 3000); // ✅ clear after 3 seconds
     } catch {
       setMessage('Failed to update church profile.');
     } finally {
@@ -71,7 +73,7 @@ export default function AdminChurchProfilePage() {
       </div>
       <div className="max-w-3xl mx-auto px-4 py-8">
         {message && (
-          <div className={`px-4 py-3 rounded-lg mb-6 text-sm ${
+          <div className={`px-4 py-3 rounded-lg mb-6 text-sm transition-all ${
             message.includes('successfully')
               ? 'bg-green-50 text-green-700'
               : 'bg-red-50 text-red-600'
@@ -104,6 +106,21 @@ export default function AdminChurchProfilePage() {
           {field('YouTube', 'youtube', 'url')}
           {field('Twitter', 'twitter', 'url')}
           {field('WhatsApp', 'whatsapp')}
+
+          <h2 className="text-lg font-bold text-blue-900 pt-4">Service Times</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Service Times (JSON format)
+            </label>
+            <textarea rows={4} value={form.serviceTimes || ''}
+              onChange={(e) => setForm({ ...form, serviceTimes: e.target.value })}
+              placeholder='[{"day":"Sunday","time":"9:00 AM","label":"Main Service"}]'
+              className="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500 font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Format: {`[{"day":"Sunday","time":"9:00 AM","label":"Main Service"}]`}
+            </p>
+          </div>
 
           <button type="submit" disabled={loading}
             className="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition disabled:opacity-50">
